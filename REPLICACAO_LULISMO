@@ -1,0 +1,180 @@
+bases_lula <- ESEB_2006 %>% 
+  select(rf, sexo, idade, instru ,eseb2,eseb6, eseb16a, eseb19, eseb21, eseb12a,eseb25, 
+         eseb45, eseb43a, eseb43b, eseb58r1, eseb58r2, eseb58r3, eseb58r4, regiao) %>% 
+  mutate(VOTO = case_when(
+    eseb12a %in% c(12, 14:66, NA) & eseb25 == 1 & eseb45 == 1 ~ "LULISTA ANTIGO",
+    eseb12a %in% c(12, 14:66, NA) & eseb25 == 1 & eseb45 != 1 ~ "LULISTA NOVO",
+    eseb12a == 13 & eseb25 == 1  ~ "PETISTA",
+    eseb12a %in% c(c(12, 14:66, NA)) & eseb25 != 1 ~ "vOUTROS",
+  ),
+  RENDA_MENOS_2_SALARIOS = ifelse(rf <700 , "1", "0"),
+  RENDA_ENTRE_2_E_5_SALARIOS = ifelse(rf %in% 701:1750, "1", "0"),
+  RENDA_MEDIA_5_A_20_SALARIOS = ifelse(rf %in% 1751:7000, "1", "0"),
+  SIMPATIA_POR_LULA = as.numeric(eseb16a),
+  AVALIACAO_RETROSPECTIVA_GERAL = ifelse(eseb6 %in% 1:2, "1", "0"),
+  CORRUPCAO_PROBLEMA_NACIONAL = case_when(
+    eseb2 %in% c(2, 3, 39, 43, 47, 57) ~ "1",
+    eseb2 %in% c(1, 4:38, 40:42, 44:46, 48:56, 58:99) ~ "0"),
+  ESQUERDA = ifelse(eseb19 %in% 0:4, "1", "0"),
+  REJEICAO_PSDB = ifelse(eseb43a == 1, "1", "0"),
+  REJEICAO_PT = ifelse(eseb43b == 1, "1", "0"),
+  INFORMACAO_POLITICA = ifelse(eseb58r1 == 1, "1", "0"),
+  ACOMPANHOU_A_CAMPANHA = ifelse(eseb21 %in% 1:2, "1", "0"),
+  ESCOLARIDADE = instru,
+  IDADE = idade,
+  GENERO = sexo,
+  NORDESTE = ifelse(regiao == 1, "1", "0"),
+  NORTE_CENTRO_OESTE = ifelse(regiao == 2, "1", "0"),
+  SUDESTE = ifelse(regiao == 3, "1", "0"),
+  VOTO = factor(VOTO)) 
+
+bases_lula$VOTO <- relevel(bases_lula$VOTO, ref = "LULISTA ANTIGO")
+
+bases <- multinom(VOTO ~  RENDA_MENOS_2_SALARIOS + RENDA_ENTRE_2_E_5_SALARIOS +
+                  RENDA_MEDIA_5_A_20_SALARIOS +  SIMPATIA_POR_LULA + AVALIACAO_RETROSPECTIVA_GERAL +
+                  CORRUPCAO_PROBLEMA_NACIONAL +  ESQUERDA + REJEICAO_PSDB + REJEICAO_PT +
+                  INFORMACAO_POLITICA + ACOMPANHOU_A_CAMPANHA + ESCOLARIDADE + IDADE + GENERO +
+                  NORDESTE + NORTE_CENTRO_OESTE + SUDESTE, 
+                  data = bases_lula, link = "probit")
+stargazer::stargazer(bases, type = "text")
+
+Tabela 1. Coeficientes de regressão probite multinomial com erros padrão robusto
+para Lulistas Antigos
+==============================================================
+                                     Dependent variable:      
+                               -------------------------------
+                               LULISTA NOVO PETISTA    OUTROS 
+                                   (1)        (2)       (3)   
+--------------------------------------------------------------
+RENDA_MENOS_2_SALARIOS            0.675      0.036     0.493  
+                                 (0.839)    (0.527)   (0.646) 
+                                                              
+RENDA_ENTRE_2_E_5_SALARIOS        0.447      0.102     0.571  
+                                 (0.846)    (0.536)   (0.634) 
+                                                              
+RENDA_MEDIA_5_A_20_SALARIOS       0.101      -0.014    0.428  
+                                 (0.998)    (0.668)   (0.732) 
+                                                              
+SIMPATIA_POR_LULA                 0.071      0.086*    0.006  
+                                 (0.049)    (0.050)   (0.050) 
+                                                              
+AVALIACAO_RETROSPECTIVA_GERAL    -1.031*     0.341   -1.935***
+                                 (0.618)    (0.734)   (0.455) 
+                                                              
+CORRUPCAO_PROBLEMA_NACIONAL      -0.551     0.066    -0.050  
+                                 (0.432)    (0.300)   (0.335) 
+                                                              
+ESQUERDA                         -0.243     0.556    -0.471  
+                                 (0.722)    (0.448)   (0.609) 
+                                                              
+REJEICAO_PSDB                    -0.186    2.341*** -2.190***
+                                 (0.553)    (0.803)   (0.399) 
+                                                              
+REJEICAO_PT                       0.533     -0.653** 1.079*** 
+                                 (0.435)    (0.329)   (0.374) 
+                                                              
+INFORMACAO_POLITICA              -0.895     -0.198   -0.784  
+                                 (0.700)    (0.429)   (0.552) 
+                                                              
+ACOMPANHOU_A_CAMPANHA             0.434     0.610**   0.561*  
+                                 (0.414)    (0.302)   (0.330) 
+                                                              
+ESCOLARIDADE                      0.178      0.048    0.212** 
+                                 (0.127)    (0.095)   (0.100) 
+                                                              
+IDADE                             0.008      0.002    -0.014  
+                                 (0.017)    (0.012)   (0.013) 
+                                                              
+GENERO                            -0.515     -0.398    0.188  
+                                 (0.415)    (0.299)   (0.329) 
+                                                              
+NORDESTE                          0.247      0.918   -1.522** 
+                                 (0.920)    (0.687)   (0.676) 
+                                                              
+NORTE_CENTRO_OESTE               -0.252     0.409    -1.222* 
+                                 (1.079)    (0.821)   (0.741) 
+                                                              
+SUDESTE                           0.182      0.521    -0.848  
+                                 (0.867)    (0.650)   (0.571) 
+                                                              
+Constant                          -1.671    -3.947**   2.015  
+                                 (1.732)    (1.551)   (1.258) 
+                                                              
+--------------------------------------------------------------
+Akaike Inf. Crit.                855.027    855.027   855.027 
+==============================================================
+Note: *p<0.1; **p<0.05; ***p<0.01   N = 1000
+
+plot_model(bases)
+
+bases_lula$VOTO <- relevel(bases_lula$VOTO, ref = "LULISTA NOVO")
+
+Tabela 2. Coeficientes de regressão probite multinomial com erros padrão robusto
+para Lulistas Novos
+
+================================================================
+                                      Dependent variable:       
+                               ---------------------------------
+                               LULISTA ANTIGO PETISTA    OUTROS 
+                                    (1)         (2)       (3)   
+----------------------------------------------------------------
+RENDA_MENOS_2_SALARIOS            -0.675      -0.639   -0.183  
+                                  (0.839)     (0.891)   (0.952) 
+                                                                
+RENDA_ENTRE_2_E_5_SALARIOS        -0.447      -0.345    0.123  
+                                  (0.847)     (0.898)   (0.949) 
+                                                                
+RENDA_MEDIA_5_A_20_SALARIOS       -0.102      -0.116    0.326  
+                                  (0.998)     (1.067)   (1.089) 
+                                                                
+SIMPATIA_POR_LULA                  -0.071      0.016    -0.065* 
+                                  (0.049)     (0.026)   (0.036) 
+                                                                
+AVALIACAO_RETROSPECTIVA_GERAL      1.031*      1.372*   -0.904  
+                                  (0.618)     (0.796)   (0.559) 
+                                                                
+CORRUPCAO_PROBLEMA_NACIONAL        0.551       0.617     0.501  
+                                  (0.432)     (0.454)   (0.467) 
+                                                                
+ESQUERDA                           0.243       0.799    -0.227  
+                                  (0.722)     (0.713)   (0.819) 
+                                                                
+REJEICAO_PSDB                      0.186      2.527*** -2.005***
+                                  (0.553)     (0.897)   (0.556) 
+                                                                
+REJEICAO_PT                       -0.533     -1.186**   0.546  
+                                  (0.435)     (0.462)   (0.481) 
+                                                                
+INFORMACAO_POLITICA                0.895       0.697     0.111  
+                                  (0.700)     (0.730)   (0.793) 
+                                                                
+ACOMPANHOU_A_CAMPANHA             -0.433      0.176     0.127  
+                                  (0.414)     (0.442)   (0.451) 
+                                                                
+ESCOLARIDADE                       -0.178      -0.129    0.035  
+                                  (0.127)     (0.134)   (0.134) 
+                                                                
+IDADE                              -0.008      -0.006   -0.022  
+                                  (0.017)     (0.018)   (0.018) 
+                                                                
+GENERO                             0.515       0.117     0.703  
+                                  (0.415)     (0.440)   (0.450) 
+                                                                
+NORDESTE                          -0.246      0.672    -1.768* 
+                                  (0.920)     (0.997)   (0.953) 
+                                                                
+NORTE_CENTRO_OESTE                 0.254       0.663    -0.968  
+                                  (1.079)     (1.191)   (1.090) 
+                                                                
+SUDESTE                           -0.181      0.341    -1.029  
+                                  (0.867)     (0.946)   (0.859) 
+                                                                
+Constant                           1.671       -2.277   3.686** 
+                                  (1.732)     (2.050)   (1.819) 
+                                                                
+----------------------------------------------------------------
+Akaike Inf. Crit.                 855.027     855.027   855.027 
+================================================================
+Note: *p<0.1; **p<0.05; ***p<0.01      N = 1000
+
+plot_model(bases)
