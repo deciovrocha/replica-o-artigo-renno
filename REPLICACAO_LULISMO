@@ -1,4 +1,4 @@
-pacotes(sjPlot, tidyverse, ggplot2, nnet)
+pacotes(sjPlot, tidyverse, ggplot2, nnet, stargazer)
 bases_lula <- ESEB_2006 %>% 
   select(rf, sexo, idade, instru ,eseb2,eseb6, eseb16a, eseb19, eseb21, eseb12a,eseb25, 
          eseb45, eseb43a, eseb43b, eseb58r1, eseb58r2, eseb58r3, eseb58r4, regiao) %>% 
